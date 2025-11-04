@@ -10,10 +10,9 @@ const VALID_KEY_CODES = [
   DOWN_KEY_CODE
 ]
 const isValidKeyCode = keyCode => VALID_KEY_CODES.indexOf(keyCode) > -1
-
-const getFormattedPercentage = number => `${number}%`
 const getNumberValue = value => Number(String(value).replace(/%/g, ''))
-const getIsPercentage = value => String(value).indexOf('%') > -1
+
+let idCounter = 1
 
 export class EditableInput extends (PureComponent || Component) {
   constructor(props) {
@@ -23,15 +22,19 @@ export class EditableInput extends (PureComponent || Component) {
       value: String(props.value).toUpperCase(),
       blurValue: String(props.value).toUpperCase(),
     }
+
+    this.inputId = `rc-editable-input-${idCounter++}`
   }
 
-  componentWillReceiveProps(nextProps) {
-    const input = this.input
-    if (nextProps.value !== this.state.value) {
-      if (input === document.activeElement) {
-        this.setState({ blurValue: String(nextProps.value).toUpperCase() })
+  componentDidUpdate(prevProps, prevState) {
+    if (
+      this.props.value !== this.state.value &&
+      (prevProps.value !== this.props.value || prevState.value !== this.state.value)
+    ) {
+      if (this.input === document.activeElement) {
+        this.setState({ blurValue: String(this.props.value).toUpperCase() })
       } else {
-        this.setState({ value: String(nextProps.value).toUpperCase(), blurValue: !this.state.blurValue && String(nextProps.value).toUpperCase() })
+        this.setState({ value: String(this.props.value).toUpperCase(), blurValue: !this.state.blurValue && String(this.props.value).toUpperCase() })
       }
     }
   }
@@ -77,10 +80,7 @@ export class EditableInput extends (PureComponent || Component) {
     const onChangeValue = this.props.label ? this.getValueObjectWithLabel(value) : value
     this.props.onChange && this.props.onChange(onChangeValue, e)
 
-    const isPercentage = getIsPercentage(e.target.value)
-    this.setState({
-      value: isPercentage ? getFormattedPercentage(value) : value
-    })
+    this.setState({ value })
   }
 
   handleDrag = (e) => {
@@ -134,6 +134,7 @@ export class EditableInput extends (PureComponent || Component) {
     return (
       <div style={ styles.wrap }>
         <input
+          id={ this.inputId }
           style={ styles.input }
           ref={ input => this.input = input }
           value={ this.state.value }
@@ -144,9 +145,13 @@ export class EditableInput extends (PureComponent || Component) {
           spellCheck="false"
         />
         { this.props.label && !this.props.hideLabel ? (
-          <span style={ styles.label } onMouseDown={ this.handleMouseDown }>
+          <label
+            htmlFor={ this.inputId }
+            style={ styles.label }
+            onMouseDown={ this.handleMouseDown }
+          >
             { this.props.label }
-          </span>
+          </label>
         ) : null }
       </div>
     )

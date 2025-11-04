@@ -1,6 +1,6 @@
 import React from 'react'
 import reactCSS from 'reactcss'
-import color from '../../helpers/color'
+import * as color from '../../helpers/color'
 
 import { EditableInput } from '../common'
 
@@ -32,6 +32,7 @@ export const PhotoshopPicker = ({ onChange, rgb, hsv, hex }) => {
       },
       RGBlabel: {
         left: '0px',
+        top: '0px',
         width: '34px',
         textTransform: 'uppercase',
         fontSize: '13px',

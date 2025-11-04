@@ -2,28 +2,32 @@
 
 import React from 'react'
 import reactCSS from 'reactcss'
-import color from '../../helpers/color'
+import * as color from '../../helpers/color'
+import isUndefined from 'lodash/isUndefined'
 
 import { EditableInput } from '../common'
 import UnfoldMoreHorizontalIcon from '@icons/material/UnfoldMoreHorizontalIcon'
 
 export class ChromeFields extends React.Component {
-  state = {
-    view: '',
-  }
+  constructor(props) {
+    super()
 
-  componentDidMount() {
-    if (this.props.hsl.a === 1 && this.state.view !== 'hex') {
-      this.setState({ view: 'hex' })
-    } else if (this.state.view !== 'rgb' && this.state.view !== 'hsl') {
-      this.setState({ view: 'rgb' })
+    if (props.hsl.a !== 1 && props.view === "hex") {
+      this.state = {
+        view: "rgb"
+      };
+    } else {
+      this.state = {
+        view: props.view,
+      }
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.hsl.a !== 1 && this.state.view === 'hex') {
-      this.setState({ view: 'rgb' })
+  static getDerivedStateFromProps(nextProps, state) {
+    if (nextProps.hsl.a !== 1 && state.view === 'hex') {
+      return { view: 'rgb' }
     }
+    return null
   }
 
   toggleViews = () => {
@@ -69,13 +73,20 @@ export class ChromeFields extends React.Component {
       }, e)
     } else if (data.h || data.s || data.l) {
       // Remove any occurances of '%'.
-      if (typeof(data.s) === 'string' && data.s.includes('%')) { data.s = data.s.replace('%', '') } 
+      if (typeof(data.s) === 'string' && data.s.includes('%')) { data.s = data.s.replace('%', '') }
       if (typeof(data.l) === 'string' && data.l.includes('%')) { data.l = data.l.replace('%', '') }
-      
+
+      // We store HSL as a unit interval so we need to override the 1 input to 0.01
+      if (data.s == 1) {
+        data.s = 0.01
+      } else if (data.l == 1) {
+        data.l = 0.01
+      }
+
       this.props.onChange({
         h: data.h || this.props.hsl.h,
-        s: Number((data.s && data.s) || this.props.hsl.s),
-        l: Number((data.l && data.l) || this.props.hsl.l),
+        s: Number(!isUndefined(data.s) ? data.s : this.props.hsl.s),
+        l: Number(!isUndefined(data.l) ? data.l : this.props.hsl.l),
         source: 'hsl',
       }, e)
     }
@@ -265,6 +276,10 @@ export class ChromeFields extends React.Component {
       </div>
     )
   }
+}
+
+ChromeFields.defaultProps = {
+  view: "hex",
 }
 
 export default ChromeFields

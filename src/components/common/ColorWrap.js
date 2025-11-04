@@ -1,6 +1,6 @@
 import React, { Component, PureComponent } from 'react'
 import debounce from 'lodash/debounce'
-import color from '../../helpers/color'
+import * as color from '../../helpers/color'
 
 export const ColorWrap = (Picker) => {
   class ColorPicker extends (PureComponent || Component) {
@@ -16,10 +16,10 @@ export const ColorWrap = (Picker) => {
       }, 100)
     }
 
-    componentWillReceiveProps(nextProps) {
-      this.setState({
-        ...color.toState(nextProps.color, this.state.oldHue),
-      })
+    static getDerivedStateFromProps(nextProps, state) {
+      return {
+        ...color.toState(nextProps.color, state.oldHue),
+      }
     }
 
     handleChange = (data, event) => {
